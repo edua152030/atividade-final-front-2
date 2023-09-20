@@ -1,58 +1,93 @@
-const cardEl = document.querySelector('.card-list');
-const FilterEl = document.querySelector('.filtred');
-const anteriorBtn = document.querySelector('#anterior');
-const proximaBtn = document.querySelector('#proxima');
+const cardEl = document.querySelector('.card-list')
+const filterInput = document.querySelector('.filtred')
+const anteriorBtn = document.querySelector('#anterior')
+const proximaBtn = document.querySelector('#proxima')
 
-FilterEl.addEventListener('input', () => filtrado(currentPage)); 
-anteriorBtn.addEventListener('click', () => pages('anterior'));
-proximaBtn.addEventListener('click', () => pages('proxima'));
+anteriorBtn.addEventListener('click', () => pages('anterior'))
+proximaBtn.addEventListener('click', () => pages('proxima'))
 
-let currentPage = 1;
+let currentPage = 1
+let totalPages = 1
+let allCards = []
 
 async function fetchCards(page = 1) {
-    const response = await api.get('/character?page=' + page);
+    let endpoint = '/character'
+
+    const response = await api.get(`${endpoint}?page=${page}`)
     let cards = response.data.results;
 
-    cardEl.innerHTML = '';
+    allCards = cards
 
-    cards.forEach(card => {
-        const lastEpisodeIndex = card.episode.length - 1;
-        const lastEpisode = card.episode[lastEpisodeIndex];
+    cardEl.innerHTML = ''
 
-        cardEl.innerHTML += `
-        <div class="card">
-            <div class="imagen">
-                <img class="image" src="${card.image}"></img>
-            </div>
-            <div class="informacoes">
-                <h1>${card.name}</h1>
-                <p>${card.status} - ${card.species}</p>
-                <h2>Última localização conhecida</h2>
-                <p>${card.origin.name}</p>
-                <h2>Visto última vez em</h2>
-                <p>${lastEpisode}</p>
-            </div>
-        </div>
-        `;
-    });
-}
+    anteriorBtn.disabled = true
+    proximaBtn.disabled = true
+    
+    try {
+        for (const card of cards) {
+            const ultimoEpisodio = card.episode.length - 1
+            const episodio = card.episode[ultimoEpisodio]
 
-fetchCards();
-
-async function filtrado(page) { 
-    const searchTerm = FilterEl.value.toLowerCase();
-
-    const response = await api.get('/character?page=' + page); 
-    let cards = response.data.results;
-
-    cardEl.innerHTML = '';
-
-    cards.forEach(card => {
-        if (card.name.toLowerCase().includes(searchTerm)) {
-            const lastEpisodeIndex = card.episode.length - 1;
-            const lastEpisode = card.episode[lastEpisodeIndex];
+            const responseEpsiodio = await api.get(card.origin.url)
+            const locationData = responseEpsiodio.data
 
             cardEl.innerHTML += `
+                <div class="card">
+                    <div class="imagen">
+                        <img class="image" src="${card.image}"></img>
+                    </div>
+                    <div class="informacoes">
+                        <h1>${card.name}</h1>
+                        <p>${card.status} - ${card.species}</p>
+                        <h2>Última localização conhecida</h2>
+                        <p>${locationData.name}</p>
+                        <h2>Visto pela última vez em</h2>
+                        <p>${locationData.name}</p>
+                    </div>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.log('não foi possível carregar os cards', error)
+    } finally {
+        anteriorBtn.disabled = false
+        proximaBtn.disabled = false
+    }
+    
+    totalPages = response.data.info.pages
+}
+
+fetchCards()
+
+async function pages(option) {
+    option === 'proxima' ? currentPage++ : currentPage--
+    
+    if (currentPage < 1) {
+        currentPage = 1;
+    }
+
+    if (currentPage > totalPages) { 
+        currentPage = totalPages;
+    }
+
+    fetchCards(currentPage)
+}
+
+async function filterCards() {
+    cardEl.innerHTML = ''
+
+    const filterValue = filterInput.value.toLowerCase()
+
+    const filteredCards = allCards.filter(card => card.name.toLowerCase().includes(filterValue))
+
+    for (const card of filteredCards) {
+        const ultimoEpisodio = card.episode.length - 1
+        const episodio = card.episode[ultimoEpisodio]
+
+        const responseEpsiodio = await api.get(card.origin.url)
+        const locationData = responseEpsiodio.data
+
+        cardEl.innerHTML += `
             <div class="card">
                 <div class="imagen">
                     <img class="image" src="${card.image}"></img>
@@ -61,22 +96,13 @@ async function filtrado(page) {
                     <h1>${card.name}</h1>
                     <p>${card.status} - ${card.species}</p>
                     <h2>Última localização conhecida</h2>
-                    <p>${card.origin.name}</p>
-                    <h2>Visto última vez em</h2>
-                    <p>${lastEpisode}</p>
+                    <p>${locationData.name}</p>
+                    <h2>Visto pela última vez em</h2>
+                    <p>${locationData.name}</p>
                 </div>
             </div>
-            `;
-        }
-    });
-}
-
-async function pages(option) {
-    option === 'proxima' ? currentPage++ : currentPage--;
-
-    if (currentPage < 1) {
-        currentPage = 1;
+        `;
     }
-
-    fetchCards(currentPage);
 }
+
+filterInput.addEventListener('input', filterCards)
