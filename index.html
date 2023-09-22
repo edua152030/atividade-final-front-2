@@ -1,34 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <link rel="stylesheet" href="./assets/styles/style.css">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>API Morty</title>
-    </head>
-    <body>
 
-        <header>
-            <h1>Rick Morty</h1>
-        </header>
-        <main class="divPrincipal">
-            <header>
-                <input class="filtred" type="text" id="pesquisa"></br>
-                <button id="anterior" type="submit" >pagina anterior</button>
-                <button id="proxima" type="submit" >proxima anterior</button>
-            </header>
-            <div class="card-list"></div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rick and Morty</title>
 
-            <section><img id="imagem" src="./assets/img/imagem.png"
-                    alt="imagem rick"></section>
-            <footer class="footer-page">
-                <p class="copy">desenvolvido por Eduardo Faria 2023</p>
-            </footer>
-        </main>
+  <link rel="stylesheet" href="./assets/styles/style.css">
+</head>
 
-        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-        <script src="./assets/scripts/api.js"></script>
-        <script src="./assets/scripts/scripts.js"></script>
-    </body>
+<body>
+  <header>
+    <h1>Rick and Morty</h1>
+    <input type="text" id="searchCharactersByName" class="search" placeholder="Pesquisar personagem por nome" />
+
+    <div id="pagination">
+      <button id="prevPage">Anterior</button>
+      <button id="nextPage">Próximo</button>
+    </div>
+  </header>
+
+  <div id="charactersList" class="characters-list"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="./assets/scripts/api.js"></script>
+  <script src="./assets/scripts/scripts.js"></script>
+</body>
 
 </html>

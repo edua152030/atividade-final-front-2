@@ -1,108 +1,78 @@
-const cardEl = document.querySelector('.card-list')
-const filterInput = document.querySelector('.filtred')
-const anteriorBtn = document.querySelector('#anterior')
-const proximaBtn = document.querySelector('#proxima')
+const charactersList = document.getElementById('charactersList')
+const searchCharactersByName = document.getElementById('searchCharactersByName')
 
-anteriorBtn.addEventListener('click', () => pages('anterior'))
-proximaBtn.addEventListener('click', () => pages('proxima'))
+const prevPage = document.getElementById('prevPage')
+const nextPage = document.getElementById('nextPage') 
 
+let response
 let currentPage = 1
-let totalPages = 1
-let allCards = []
 
-async function fetchCards(page = 1) {
-    let endpoint = '/character'
+let isLoading = false
 
-    const response = await api.get(`${endpoint}?page=${page}`)
-    let cards = response.data.results;
+async function loadCharacters(page = 1, name = '') {
+  try {
+    isLoading = true
 
-    allCards = cards
-
-    cardEl.innerHTML = ''
-
-    anteriorBtn.disabled = true
-    proximaBtn.disabled = true
-    
-    try {
-        for (const card of cards) {
-            const ultimoEpisodio = card.episode.length - 1
-            const episodio = card.episode[ultimoEpisodio]
-
-            const responseEpsiodio = await api.get(card.origin.url)
-            const locationData = responseEpsiodio.data
-
-            cardEl.innerHTML += `
-                <div class="card">
-                    <div class="imagen">
-                        <img class="image" src="${card.image}"></img>
-                    </div>
-                    <div class="informacoes">
-                        <h1>${card.name}</h1>
-                        <p>${card.status} - ${card.species}</p>
-                        <h2>Última localização conhecida</h2>
-                        <p>${locationData.name}</p>
-                        <h2>Visto pela última vez em</h2>
-                        <p>${locationData.name}</p>
-                    </div>
-                </div>
-            `;
-        }
-    } catch (error) {
-        console.log('não foi possível carregar os cards', error)
-    } finally {
-        anteriorBtn.disabled = false
-        proximaBtn.disabled = false
-    }
-    
-    totalPages = response.data.info.pages
-}
-
-fetchCards()
-
-async function pages(option) {
-    option === 'proxima' ? currentPage++ : currentPage--
-    
-    if (currentPage < 1) {
-        currentPage = 1;
+    const params = {
+      name,
+      page
     }
 
-    if (currentPage > totalPages) { 
-        currentPage = totalPages;
-    }
+    response = await api.get('/character', { params })
+    const cards = response.data.results
+    console.log(cards);
 
-    fetchCards(currentPage)
-}
+    prevPage.disabled = true
+    nextPage.disabled = true
 
-async function filterCards() {
-    cardEl.innerHTML = ''
+    charactersList.innerHTML = ''
 
-    const filterValue = filterInput.value.toLowerCase()
-
-    const filteredCards = allCards.filter(card => card.name.toLowerCase().includes(filterValue))
-
-    for (const card of filteredCards) {
-        const ultimoEpisodio = card.episode.length - 1
-        const episodio = card.episode[ultimoEpisodio]
-
-        const responseEpsiodio = await api.get(card.origin.url)
-        const locationData = responseEpsiodio.data
-
-        cardEl.innerHTML += `
-            <div class="card">
-                <div class="imagen">
-                    <img class="image" src="${card.image}"></img>
-                </div>
-                <div class="informacoes">
-                    <h1>${card.name}</h1>
-                    <p>${card.status} - ${card.species}</p>
-                    <h2>Última localização conhecida</h2>
-                    <p>${locationData.name}</p>
-                    <h2>Visto pela última vez em</h2>
-                    <p>${locationData.name}</p>
-                </div>
+    cards.forEach(character => {
+        
+        const card = document.createElement('div');
+        card.innerHTML = `
+        <div class="characters-card"> 
+            <div>
+                <img class="characters-image" src="${character.image}">
             </div>
+            <div>
+                <h2>${character.name}</h2>
+                <p>${character.status} - ${character.origin.name} </p>
+            </div>
+        </div>
         `;
-    }
+        
+        charactersList.appendChild(card);
+        
+        prevPage.disabled = response.data.info.prev ? false : true;
+        nextPage.disabled = response.data.info.next ? false : true;
+    })
+   
+
+  } catch (error) {
+    console.log("Erro ao buscar personagens.", error)
+  } finally {
+    isLoading = false
+  }
 }
 
-filterInput.addEventListener('input', filterCards)
+loadCharacters()
+
+searchCharactersByName.addEventListener('input', () => {
+  currentPage = 1
+  loadCharacters(currentPage, searchCharactersByName.value)
+})
+
+prevPage.addEventListener('click', () => {
+  if (currentPage > 1 && !isLoading) {
+    currentPage--
+    loadCharacters(currentPage)
+  }
+})
+
+nextPage.addEventListener('click', () => {
+  if (currentPage < response.data.info.pages && !isLoading) {
+    currentPage++
+    loadCharacters(currentPage)
+  }
+})
