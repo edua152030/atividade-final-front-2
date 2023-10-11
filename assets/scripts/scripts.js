@@ -16,6 +16,7 @@ async function loadCharacters(page = 1, name = '') {
     const params = {
       name,
       page
+      
     }
 
     response = await api.get('/character', { params })
