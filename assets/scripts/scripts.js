@@ -38,7 +38,7 @@ async function loadCharacters(page = 1, name = '') {
         </div>
 
         <!-- Modal -->
-        <div class="modal fade" id="exampleModal-${index}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade animation3" id="exampleModal-${index}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
@@ -47,9 +47,9 @@ async function loadCharacters(page = 1, name = '') {
               </div>
               <div class="modal-body">
                 <!-- Use character details here -->
-                <img class="characters-image" src="${character.image}">
+                <img class="characters-image animation1" src="${character.image}">
                 <h2>${character.name}</h2>
-                <p>Status: ${character.status}</p>
+                <p class="animation2">Status: ${character.status}</p>
                 <p>Origin: ${character.origin.name}</p>
               </div>
             </div>
